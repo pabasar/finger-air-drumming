@@ -22,7 +22,7 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 
 # Initialize the hands object
-hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3, max_num_hands=2)
+hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.5, min_tracking_confidence=0.5, max_num_hands=2)
 
 # Define the labels for the different hand gestures
 labels_dict = {'1': 'r_mute',
