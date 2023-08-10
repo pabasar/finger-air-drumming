@@ -51,6 +51,10 @@ cooldown_r = 0
 # Cooldown time in seconds
 cooldown_time = 0.5
 
+# Initialize dictionaries to track the last time each pad was played
+last_played_time_l = {}
+last_played_time_r = {}
+
 # Initialize Pygame for playing sounds
 pygame.init()
 pygame.mixer.init()
@@ -241,6 +245,15 @@ def update_gui():
         else:
             # Remove the pad from highlighted_pads if it has been highlighted for 0.5 seconds or more
             del highlighted_pads[playing_pad]
+            
+    # Remove pads from last_played_time dictionaries if cooldown time has passed
+    for pad in list(last_played_time_l.keys()):
+        if current_time - last_played_time_l[pad] >= cooldown_time:
+            del last_played_time_l[pad]
+    
+    for pad in list(last_played_time_r.keys()):
+        if current_time - last_played_time_r[pad] >= cooldown_time:
+            del last_played_time_r[pad]
 
     # Update the display
     pygame.display.flip()
@@ -341,25 +354,23 @@ while True:
     
     # If accuracy is above 85%, play the drum sound corresponding to the left hand gesture
     if prediction_accuracy_l > 85.0:
-        if predicted_label_l in drum_sounds and current_time - cooldown_l > cooldown_time:
-            # Update the cooldown time
-            cooldown_l = current_time
-            # Start new threads for playing the left hand sound
+        if predicted_label_l in drum_sounds and predicted_label_l not in last_played_time_l:
+            # Start new thread for playing the left hand sound
             thread_l = threading.Thread(target=play_drum_sound, args=(drum_sounds[predicted_label_l],))
             thread_l.start()
+            last_played_time_l[predicted_label_l] = current_time
             thread_l_pad = threading.Thread(target=highlight_pad, args=(drum_pads[predicted_label_l],))
             thread_l_pad.start()
 
     # If accuracy is above 85%, play the drum sound corresponding to the right hand gesture
     if prediction_accuracy_r > 85.0:
-        if predicted_label_r in drum_sounds and current_time - cooldown_r > cooldown_time:
-            # Update the cooldown time
-            cooldown_r = current_time
-            # Start new threads for playing the right hand sound
+        if predicted_label_r in drum_sounds and predicted_label_r not in last_played_time_r:
+            # Start new thread for playing the right hand sound
             thread_r = threading.Thread(target=play_drum_sound, args=(drum_sounds[predicted_label_r],))
             thread_r.start()
+            last_played_time_r[predicted_label_r] = current_time
             thread_r_pad = threading.Thread(target=highlight_pad, args=(drum_pads[predicted_label_r],))
-            thread_r_pad.start() 
+            thread_r_pad.start()
 
     # Update GUI
     update_gui()
